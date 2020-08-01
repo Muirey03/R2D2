@@ -10,6 +10,7 @@
 	NSMutableDictionary<NSNumber*, NSNumber*>* _layerTimesVisited;
 	NSMutableDictionary<NSValue*, NSNumber*>* _pointCount;
 	NSMutableDictionary<NSValue*, NSNumber*>* _pointTimesVisited;
+	NSMapTable<R2ArrowDescriptor*, NSNumber*>* _index0TimesVisited;
 	NSMapTable<R2GraphBlock*, NSNumber*>* _xrefsCount;
 	NSMapTable<R2GraphBlock*, NSNumber*>* _xrefsTimesVisited;
 }
@@ -56,22 +57,35 @@
 	return points;
 }
 
--(CGFloat)xOffsetForPoint:(CGPoint)p
+-(CGFloat)xOffsetForPoint:(CGPoint)p onArrow:(R2ArrowDescriptor*)arrowDesc;
 {
-	NSUInteger layer = (NSUInteger)p.y;
 	NSUInteger index = (NSUInteger)p.x;
-	NSArray<R2GraphBlock*>* blocks = [_layout blocksInLayer:layer + 1];
-
-	NSUInteger pointCount = [_pointCount[@(p)] unsignedIntegerValue];
-	CGFloat spacing = [R2GraphLayout horizontalPadding] / (pointCount + 1);
-	NSUInteger timesVisited = [_pointTimesVisited[@(p)] unsignedIntegerValue];
-	_pointTimesVisited[@(p)] = @(++timesVisited);
-
 	CGFloat x;
 	if (index == 0)
-		x = blocks[0].frame.origin.x - (spacing * timesVisited);
+	{
+		NSUInteger timesVisited = [_index0TimesVisited objectForKey:arrowDesc] ? [[_index0TimesVisited objectForKey:arrowDesc] unsignedIntegerValue] : _index0TimesVisited.count + 1;
+		[_index0TimesVisited setObject:@(timesVisited) forKey:arrowDesc];
+		CGFloat minX = CGFLOAT_MAX;
+		for (NSUInteger i = 0; i < _layout.layerCount; i++)
+		{
+			CGFloat minLayerX = [_layout blocksInLayer:i].firstObject.frame.origin.x;
+			if (minLayerX < minX)
+				minX = minLayerX;
+		}
+		const CGFloat spacing = 10;
+		x = minX - (spacing * timesVisited);
+	}
 	else
+	{
+		NSUInteger layer = (NSUInteger)p.y;
+		NSArray<R2GraphBlock*>* blocks = [_layout blocksInLayer:layer + 1];
+
+		NSUInteger pointCount = [_pointCount[@(p)] unsignedIntegerValue];
+		CGFloat spacing = [R2GraphLayout horizontalPadding] / (pointCount + 1);
+		NSUInteger timesVisited = [_pointTimesVisited[@(p)] unsignedIntegerValue];
+		_pointTimesVisited[@(p)] = @(++timesVisited);
 		x = blocks[index - 1].frame.origin.x + blocks[index - 1].frame.size.width + (spacing * timesVisited);
+	}
 	return x;
 }
 
@@ -129,7 +143,7 @@
 	for (NSValue* val in points)
 	{
 		CGPoint p = [val CGPointValue];
-		CGFloat x = [self xOffsetForPoint:p];
+		CGFloat x = [self xOffsetForPoint:p onArrow:arrow];
 		NSUInteger currentLayer = (NSUInteger)p.y;
 		[path addLineToPoint:CGPointMake(x, path.currentPoint.y)];
 		CGFloat nextY = [self yOffsetForLayer:currentLayer + (dstLayer > srcLayer ? 1 : 0)];
@@ -157,15 +171,14 @@ Plan for preventing overlapping lines:
 - Get a count of how many paths go through each layer
 - Get a count of how many paths go though each point
 - yOffsetForLayer: returns a value each subsequent time it is called on the same layer
-- xOffsetForPoint: returns a value each subsequent time it is called on the same point
+- xOffsetForPoint:onArrow: returns a value each subsequent time it is called on the same point
 
 To prevent overlapping destinations:
 - Get a count of numbers of xrefs for each block
-- end x adjusted based each subsequent time drawArrowFromBlock is called on the same dst block
+- end x adjusted based each subsequent time endPointForArrow: is called on the same dst block
 
-To prevent overlapping destinations:
-- drawArrowFromBlock: takes a srcPoint
-- This is different for jump and fail (sourcePointForJumpFromBlock: / sourcePointForFailFromBlock:)
+To prevent overlapping sources:
+- startPointForArrow: knows whether the arrow is for a jump or fail
 */
 
 -(void)doCount
@@ -176,6 +189,7 @@ To prevent overlapping destinations:
 	_pointTimesVisited = [NSMutableDictionary new];
 	_xrefsCount = [NSMapTable weakToStrongObjectsMapTable];
 	_xrefsTimesVisited = [NSMapTable weakToStrongObjectsMapTable];
+	_index0TimesVisited = [NSMapTable weakToStrongObjectsMapTable];
 
 	#define INCREMENT_LAYER(layer) _layerLineCount[@(layer)] = @([_layerLineCount[@(layer)] unsignedIntegerValue] + 1)
 	#define INCREMENT_POINT(p) _pointCount[p] = @([_pointCount[p] unsignedIntegerValue] + 1)
