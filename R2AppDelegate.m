@@ -1,6 +1,7 @@
 #import "R2AppDelegate.h"
 #import "R2FunctionsViewController.h"
 #import "R2GraphViewController.h"
+#import "R2DecompilerViewController.h"
 
 @implementation R2AppDelegate
 -(void)applicationDidFinishLaunching:(UIApplication*)application
@@ -11,7 +12,8 @@
 	NSArray* vcClasses = @[
 		[R2RootViewController class],
 		[R2FunctionsViewController class],
-		[R2GraphViewController class]
+		[R2GraphViewController class],
+		[R2DecompilerViewController class]
 	];
 
 	_tabController = [UITabBarController new];
