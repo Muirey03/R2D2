@@ -1,0 +1,9 @@
+Package: com.muirey03.r2d2
+Name: r2d2
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: Radare2 GUI application
+Maintainer: Muirey03
+Author: Muirey03
+Section: Utilities
+Depends: radare2
