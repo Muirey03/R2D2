@@ -79,7 +79,7 @@
 			[pluginManager loadPluginAtPath:@"/usr/lib/radare2/4.5.0/core_ghidra.dylib"];
 		
 		NSDictionary* currentFunc = functions.allFunctions[functions.currentFunction];
-		[[R2Core sharedInstance] cmd:[NSString stringWithFormat:@"s 0x%llx", [currentFunc[@"offset"] unsignedLongLongValue]]];
+		[[R2Core sharedInstance] seek:[currentFunc[@"offset"] unsignedLongLongValue]];
 		NSString* ansi = [pluginManager cmd:@"pdg" forPlugin:@"r2ghidra"];
 		R2ANSIParser* ansiParser = [R2ANSIParser new];
 		NSMutableAttributedString* pseudocode = [[ansiParser attributedStringWithANSIString:ansi] mutableCopy];

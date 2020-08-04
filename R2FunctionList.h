@@ -8,5 +8,7 @@
 -(NSDictionary*)functionNamed:(NSString*)name;
 -(NSDictionary*)functionAtAddress:(uint64_t)addr;
 -(NSString*)demangledNameForFunctionAtIndex:(NSUInteger)index;
+-(NSString*)signatureForFunctionAtIndex:(NSUInteger)index;
+-(void)setSignature:(NSString*)sig forFunctionAtIndex:(NSUInteger)index;
 -(void)postCurrentFunctionDidChangeNotification;
 @end

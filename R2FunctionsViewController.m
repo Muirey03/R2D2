@@ -102,6 +102,33 @@
 	[tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
+-(UISwipeActionsConfiguration*)tableView:(UITableView*)tableView leadingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath*)indexPath
+{
+	UIContextualAction* setSigAction = [UIContextualAction contextualActionWithStyle:UIContextualActionStyleNormal title:@"Set Signature" handler:^(UIContextualAction* action, UIView* sourceView, void (^completionHandler)(BOOL)){
+		NSUInteger funcIndex = [_filteredIndexes[indexPath.row] unsignedIntegerValue];
+		UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Set Signature" message:nil preferredStyle:UIAlertControllerStyleAlert];
+		__block UITextField* alertTextField = nil;
+		[alert addTextFieldWithConfigurationHandler:^(UITextField* textField){
+			textField.placeholder = @"Enter new function signature";
+			textField.text = [_functions signatureForFunctionAtIndex:funcIndex];
+			alertTextField = textField;
+		}];
+		UIAlertAction* doneAction = [UIAlertAction actionWithTitle:@"Done" style:UIAlertActionStyleDefault handler:^(UIAlertAction* alertAction){
+			[_functions setSignature:alertTextField.text forFunctionAtIndex:funcIndex];
+		}];
+		UIAlertAction* cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
+		[alert addAction:cancelAction];
+		[alert addAction:doneAction];
+		[self presentViewController:alert animated:YES completion:^{
+			completionHandler(YES);
+		}];
+	}];
+	setSigAction.backgroundColor = [UIColor systemBlueColor];
+	NSArray<UIContextualAction*>* actions = @[setSigAction];
+	UISwipeActionsConfiguration* config = [UISwipeActionsConfiguration configurationWithActions:actions];
+	return config;
+}
+
 #pragma mark Search Results Methods
 
 -(void)updateSearchResultsForSearchController:(UISearchController*)searchController

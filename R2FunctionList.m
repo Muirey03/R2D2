@@ -87,6 +87,22 @@
 		[self postCurrentFunctionDidChangeNotification];
 }
 
+-(NSString*)signatureForFunctionAtIndex:(NSUInteger)index
+{
+	NSDictionary* fn = _allFunctions[index];
+	unsigned long long offset = [fn[@"offset"] unsignedLongLongValue];
+	[[R2Core sharedInstance] seek:offset];
+	return [[R2Core sharedInstance] cmd:@"afs"];
+}
+
+-(void)setSignature:(NSString*)sig forFunctionAtIndex:(NSUInteger)index
+{
+	NSDictionary* fn = _allFunctions[index];
+	unsigned long long offset = [fn[@"offset"] unsignedLongLongValue];
+	[[R2Core sharedInstance] seek:offset];
+	[[R2Core sharedInstance] cmd:[NSString stringWithFormat:@"afs %@", sig]];
+}
+
 -(void)postCurrentFunctionDidChangeNotification
 {
 	[[NSNotificationCenter defaultCenter] postNotificationName:kCurrentFunctionChangeNotification object:nil];
