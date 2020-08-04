@@ -20,10 +20,6 @@
 @end
 
 @implementation R2RootViewController
-{
-	R2LoadingIndicator* _spinner;
-}
-
 -(instancetype)init
 {
 	if ((self = [super initWithStyle:UITableViewStyleGrouped]))
@@ -69,11 +65,11 @@
 	R2Core* core = [R2Core sharedInstance];
 	NSString* oldSelectedProject = core.projectName;
 	[core loadFile:url.path];
-	[self showSpinner];
+	R2LoadingIndicator* spinner = [[R2LoadingIndicator alloc] initForPresentationFromController:self];
 	[core analyzeWithCompletion:^{
 		[core saveProjectNamed:projName];
 		dispatch_async(dispatch_get_main_queue(), ^{
-			[self hideSpinner];
+			[spinner dismiss];
 
 			[self reloadProjects];
 			if (_projects.count == 1)
@@ -113,18 +109,6 @@
 -(void)postProjectDidChangeNotification
 {
 	[[NSNotificationCenter defaultCenter] postNotificationName:kProjectDidChangeNotification object:nil];
-}
-
--(void)showSpinner
-{
-	_spinner = [R2LoadingIndicator new];
-	[self presentViewController:_spinner animated:YES completion:nil];
-}
-
--(void)hideSpinner
-{
-	[_spinner dismissViewControllerAnimated:YES completion:nil];
-	_spinner = nil;
 }
 
 -(void)showErrorMessage:(NSString*)errorMsg

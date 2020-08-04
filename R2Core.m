@@ -1,8 +1,8 @@
 #import "R2Core.h"
+#import "R2PluginManager.h"
 
 @implementation R2Core
 {
-	RCore* _core;
 	RCoreFile* _file;
 	NSOperationQueue* _queue;
 }
@@ -29,6 +29,7 @@
 
 -(void)reloadCore
 {
+	[[R2PluginManager sharedInstance] unloadAllPlugins];
 	if (_file)
 		r_core_file_close(_core, _file);
 	if (_core)

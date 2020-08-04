@@ -9,7 +9,7 @@
 {
 	NSDictionary<NSNumber*, NSDictionary*>* ansiColors = @{
 		@0 : @{ NSForegroundColorAttributeName : [UIColor labelColor] },
-		@30 : @{ NSForegroundColorAttributeName : [UIColor blackColor] },
+		@30 : @{ NSForegroundColorAttributeName : [UIColor labelColor] },
 		@31 : @{ NSForegroundColorAttributeName : [UIColor systemRedColor] },
 		@32 : @{ NSForegroundColorAttributeName : [UIColor systemGreenColor] },
 		@33 : @{ NSForegroundColorAttributeName : [UIColor systemYellowColor] },
@@ -74,9 +74,13 @@
 
 -(NSAttributedString*)attributedStringWithANSIString:(NSString*)str
 {
+	if (!str)
+		return nil;
+	str = [str stringByReplacingOccurrencesOfString:@"\033" withString:@"\\033"];
 	_str = str;
 
 	NSMutableAttributedString* attributedString = [[NSMutableAttributedString alloc] initWithString:str];
+	[attributedString addAttributes:[self ansiColors][@0] range:NSMakeRange(0, attributedString.string.length)];
 
 	NSUInteger index = 0;
 	NSDictionary* prevAttrib = nil;

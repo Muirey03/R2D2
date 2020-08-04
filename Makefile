@@ -12,6 +12,6 @@ R2D2_FILES = $(wildcard *.m *.mm)
 R2D2_FRAMEWORKS = UIKit CoreGraphics
 R2D2_CFLAGS = -fobjc-arc -Iinclude/libr
 R2D2_LDFLAGS = -Llib
-R2D2_LIBRARIES = r_core
+R2D2_LIBRARIES = r_core.4.5.0 r_util.4.5.0 r_cons.4.5.0
 
 include $(THEOS_MAKE_PATH)/application.mk

@@ -4,6 +4,7 @@
 
 @interface R2Core : NSObject
 @property (nonatomic, strong) NSString* projectName;
+@property (nonatomic, readonly) RCore* core;
 +(instancetype)sharedInstance;
 -(void)reloadCore;
 -(void)setupConfig;

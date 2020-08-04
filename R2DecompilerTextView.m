@@ -34,9 +34,11 @@
 	[marginView.bottomAnchor constraintEqualToAnchor:_lineNumbers.bottomAnchor].active = YES;
 }
 
--(void)setText:(NSString*)text
+-(void)setAttributedText:(NSAttributedString*)attrText
 {
-	[super setText:text];
+	[super setAttributedText:attrText];
+
+	NSString* text = attrText.string;
 	[self layoutIfNeeded];
 	NSMutableString* lineNoString = [NSMutableString new];
 	NSUInteger lineCount = [text componentsSeparatedByString:@"\n"].count;

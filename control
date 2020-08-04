@@ -6,4 +6,4 @@ Description: Radare2 GUI application
 Maintainer: Muirey03
 Author: Muirey03
 Section: Utilities
-Depends: radare2
+Depends: libradare2-4.5 (>=4.5.0), r2ghidra-dec

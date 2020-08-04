@@ -11,6 +11,15 @@
 	return self;
 }
 
+-(instancetype)initForPresentationFromController:(UIViewController*)vc
+{
+	if ((self = [self init]))
+	{
+		[vc presentViewController:self animated:YES completion:nil];
+	}
+	return self;
+}
+
 -(void)loadView
 {
 	[super loadView];
@@ -55,5 +64,10 @@
 {
 	[super viewDidDisappear:animated];
 	[_spinner stopAnimating];
+}
+
+-(void)dismiss
+{
+	[self dismissViewControllerAnimated:YES completion:nil];
 }
 @end
