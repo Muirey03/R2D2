@@ -8,7 +8,6 @@
 @implementation R2DecompilerViewController
 {
 	BOOL _needsContentRefresh;
-	UILabel* _lineNumbers;
 }
 
 -(instancetype)init
@@ -30,25 +29,25 @@
 	[super loadView];
 
 	self.view.backgroundColor = [UIColor systemBackgroundColor];
-	const CGFloat lineNumbersWidth = /*40;*/0; //DEBUG
-	const CGFloat topTextInsets = 19;
-	const CGFloat leftTextInsets = 7;
 
-	_textView = [[R2DecompilerTextView alloc] initWithFrame:CGRectZero lineNumbersWidth:lineNumbersWidth];
-	_textView.editable = NO;
-	_textView.textContainerInset = UIEdgeInsetsMake(0, lineNumbersWidth + leftTextInsets, 0, leftTextInsets);
-	_textView.contentInset = UIEdgeInsetsMake(topTextInsets, 0, topTextInsets, 0);
-	_textView.font = [UIFont fontWithName:@"CourierNewPSMT" size:15];
-	_textView.backgroundColor = [UIColor clearColor];
-	[self.view addSubview:_textView];
+	//JS config:
+	NSString* js = [self javascriptString];
+	WKUserScript* wkUScript = [[WKUserScript alloc] initWithSource:js injectionTime:WKUserScriptInjectionTimeAtDocumentEnd forMainFrameOnly:YES];
+	WKUserContentController* wkUController = [WKUserContentController new];
+	[wkUController addUserScript:wkUScript];
+	WKWebViewConfiguration* config = [WKWebViewConfiguration new];
+	config.userContentController = wkUController;
 
-	_textView.translatesAutoresizingMaskIntoConstraints = NO;
-	[_textView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor].active = YES;
-	[_textView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor].active = YES;
-	[_textView.topAnchor constraintEqualToAnchor:self.view.topAnchor].active = YES;
-	[_textView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor].active = YES;
+	_webView = [[WKWebView alloc] initWithFrame:CGRectZero configuration:config];
+	_webView.opaque = NO;
+	_webView.backgroundColor = [UIColor clearColor];
+	[self.view addSubview:_webView];
 
-	[_textView setupLineNumbers];
+	_webView.translatesAutoresizingMaskIntoConstraints = NO;
+	[_webView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor].active = YES;
+	[_webView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor].active = YES;
+	[_webView.topAnchor constraintEqualToAnchor:self.view.topAnchor].active = YES;
+	[_webView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor].active = YES;
 }
 
 -(void)viewDidAppear:(BOOL)animated
@@ -62,18 +61,12 @@
 	}
 }
 
--(void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
-{
-	[super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-	_textView.contentOffset = CGPointZero;
-}
-
 -(void)refreshContent
 {
 	R2FunctionList* functions = [R2FunctionList sharedInstance];
 	if (functions.currentFunction == -1)
 	{
-		_textView.attributedText = nil;
+		[_webView loadHTMLString:@"" baseURL:nil];
 		return;
 	}
 
@@ -88,13 +81,28 @@
 		NSString* ansi = [pluginManager cmd:@"pdg" forPlugin:@"r2ghidra"];
 		R2ANSIParser* ansiParser = [R2ANSIParser new];
 		NSMutableAttributedString* pseudocode = [[ansiParser attributedStringWithANSIString:ansi] mutableCopy];
-		[pseudocode addAttributes:@{NSFontAttributeName : _textView.font} range:NSMakeRange(0, pseudocode.string.length)];
+		UIFont* font = [UIFont fontWithName:@"Menlo-Regular" size:15];
+		[pseudocode addAttributes:@{NSFontAttributeName : font} range:NSMakeRange(0, pseudocode.string.length)];
+
+		NSDictionary* documentAttributes = @{NSDocumentTypeDocumentAttribute : NSHTMLTextDocumentType};    
+		NSData* htmlData = [pseudocode dataFromRange:NSMakeRange(0, pseudocode.length) documentAttributes:documentAttributes error:NULL];
+		NSString* htmlString = [[NSString alloc] initWithData:htmlData encoding:NSUTF8StringEncoding];
 
 		dispatch_async(dispatch_get_main_queue(), ^{
 			[spinner dismiss];
-			_textView.attributedText = pseudocode;
+			[_webView loadHTMLString:htmlString baseURL:nil];
 		});
 	});
+}
+
+-(NSString*)javascriptString
+{
+	return 	@"var body = document.getElementsByTagName('body')[0];"
+			@"body.style.whiteSpace = 'nowrap';"
+			@"var meta = document.createElement('meta');"
+			@"meta.setAttribute('name', 'viewport');"
+			@"meta.setAttribute('content', 'initial-scale=1.0,maximum-scale=3.0, minimum-scale=0.5');"
+			@"document.getElementsByTagName('head')[0].appendChild(meta);";
 }
 
 -(void)currentFunctionDidChange:(NSNotification*)note

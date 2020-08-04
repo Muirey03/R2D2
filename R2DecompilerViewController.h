@@ -1,6 +1,7 @@
-#import "R2DecompilerTextView.h"
+@import WebKit;
 
 @interface R2DecompilerViewController : UIViewController
-@property (nonatomic, strong) R2DecompilerTextView* textView;
+@property (nonatomic, strong) WKWebView* webView;
 -(void)refreshContent;
+-(NSString*)javascriptString;
 @end
