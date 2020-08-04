@@ -18,6 +18,7 @@
 		UIImage* itemImg = [UIImage systemImageNamed:@"textformat.abc"];
 		self.tabBarItem = [[UITabBarItem alloc] initWithTitle:self.title image:itemImg tag:0];
 		self.navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayModeNever;
+		self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(refreshContent)];
 
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(currentFunctionDidChange:) name:kCurrentFunctionChangeNotification object:nil];
 	}
