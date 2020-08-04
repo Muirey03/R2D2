@@ -8,6 +8,7 @@
 @implementation R2DecompilerViewController
 {
 	BOOL _needsContentRefresh;
+	NSAttributedString* _pseudocode;
 }
 
 -(instancetype)init
@@ -84,16 +85,21 @@
 		NSMutableAttributedString* pseudocode = [[ansiParser attributedStringWithANSIString:ansi] mutableCopy];
 		UIFont* font = [UIFont fontWithName:@"Menlo-Regular" size:15];
 		[pseudocode addAttributes:@{NSFontAttributeName : font} range:NSMakeRange(0, pseudocode.string.length)];
-
-		NSDictionary* documentAttributes = @{NSDocumentTypeDocumentAttribute : NSHTMLTextDocumentType};    
-		NSData* htmlData = [pseudocode dataFromRange:NSMakeRange(0, pseudocode.length) documentAttributes:documentAttributes error:NULL];
-		NSString* htmlString = [[NSString alloc] initWithData:htmlData encoding:NSUTF8StringEncoding];
+		_pseudocode = pseudocode;
 
 		dispatch_async(dispatch_get_main_queue(), ^{
 			[spinner dismiss];
-			[_webView loadHTMLString:htmlString baseURL:nil];
+			[self reloadWebView];
 		});
 	});
+}
+
+-(void)reloadWebView
+{
+	NSDictionary* documentAttributes = @{NSDocumentTypeDocumentAttribute : NSHTMLTextDocumentType};    
+	NSData* htmlData = [_pseudocode dataFromRange:NSMakeRange(0, _pseudocode.length) documentAttributes:documentAttributes error:NULL];
+	NSString* htmlString = [[NSString alloc] initWithData:htmlData encoding:NSUTF8StringEncoding];
+	[_webView loadHTMLString:htmlString baseURL:nil];
 }
 
 -(NSString*)javascriptString
@@ -104,6 +110,12 @@
 			@"meta.setAttribute('name', 'viewport');"
 			@"meta.setAttribute('content', 'initial-scale=1.0,maximum-scale=3.0, minimum-scale=0.5');"
 			@"document.getElementsByTagName('head')[0].appendChild(meta);";
+}
+
+-(void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection
+{
+	if (self.traitCollection.userInterfaceStyle != previousTraitCollection.userInterfaceStyle)
+		[self reloadWebView];
 }
 
 -(void)currentFunctionDidChange:(NSNotification*)note

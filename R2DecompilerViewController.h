@@ -4,4 +4,5 @@
 @property (nonatomic, strong) WKWebView* webView;
 -(void)refreshContent;
 -(NSString*)javascriptString;
+-(void)reloadWebView;
 @end
