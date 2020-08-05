@@ -1,0 +1,33 @@
+os: osx
+language: objective-c
+osx_image: xcode10.1
+sudo: false
+env:
+  global:
+  - THEOS=~/theos
+before_install:
+- brew install dpkg ldid
+- git clone --recursive git://github.com/theos/theos.git ~/theos
+- curl -LO https://github.com/SniperGER/iOS13-Private-SDK/archive/master.zip
+- TMP=$(mktemp -d)
+- unzip -qq master.zip -d $TMP
+- mv $TMP/iOS13-Private-SDK-master/sdks/*.sdk $THEOS/sdks
+- rm -r master.zip $TMP
+script:
+- make clean package FINALPACKAGE=1
+before_deploy:
+- git config --local user.name "Muirey03"
+- git config --local user.email "tommy.muir@btinternet.com"
+- export RELEASE_PKG_FILE=$(ls ./packages/*.deb)
+- export TRAVIS_TAG=${TRAVIS_TAG:-$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)}
+- git tag $TRAVIS_TAG
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key:
+    secure: Ecye3wA9HDhZZJBIlEVG2TTSLr2YnTa7FxlmGsl/LRPGO+rEADv0sDMre5l92PAWQIjpGsuIfxr7+eyNyr7qYceWL0n0SB8bySkM1TMRD+dU4jUaDKIUKsBFNRvlF+ZEcdz0vBYLejF60vQz/ayvCbHcKEF7/FJONnofMLCrvf/oYBoQnTkkngPaxdURbfFaWp5LfepjyKIHpCvkKri/x1Wph8umTFAbUJItmDzd0qwyYPVhvg/GBJt+qouzq73spgIoGCWEoG3YGojQtQU0hzFtsD3TkygVbtr3EuWCSRSpm7/v8liR1yXDGO3S594bJXl/0BzuiV9cES5FGu+KXz9S1DhSGXdc+3KBRNL/iVZGp2hqdYzAmAcVH91cFSXjracGnzlW1ghGiX/T19UFPg9g14IP9vACj1d4wGi7lpwo2smWBi311+iP4nugajl0HjafEDIKbRNFWyAEZqmOTHKl4JT9Yk6xEo1PqH9/CdyP/E2eiqtop/pIjcchpC5sUZKzHvU4sVPIiMULZBwbyi5GoB8eEhhYjk5dP71vZy6EZcDbNygTB0GAvZP+ZR8SBK6sBIlXKy84UT3Yu1u7j3kY9kyYY5OoB1mVPyXKUuZmncfUh8C3FlUICTbqo+zoeCJmjELnrEQ22HQHeASvmcXDq/LmnURtVJyMcfhWXYw=
+  file_glob: true
+  file: "${RELEASE_PKG_FILE}"
+  on:
+    repo: Muirey03/R2D2
+    branch: master
