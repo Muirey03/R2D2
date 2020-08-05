@@ -128,11 +128,7 @@
 	if (!json)
 		return nil;
 	NSData* jsonData = [json dataUsingEncoding:NSUTF8StringEncoding];
-	NSError* err = nil;
-	id ret = [NSJSONSerialization JSONObjectWithData:jsonData options:kNilOptions error:&err];
-	if (err)
-		RLog(@"err: %@", err);
-	return ret;
+	return [NSJSONSerialization JSONObjectWithData:jsonData options:kNilOptions error:NULL];
 }
 
 -(void)dealloc

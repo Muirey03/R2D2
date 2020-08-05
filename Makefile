@@ -1,4 +1,4 @@
-TARGET := iphone:clang:latest:7.0
+TARGET := iphone:clang:latest:13.0
 INSTALL_TARGET_PROCESSES = R2D2
 ARCHS = arm64
 
